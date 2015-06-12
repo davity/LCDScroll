@@ -5,9 +5,14 @@
 
 LiquidCrystal_I2C	lcd(0x27,2,1,0,4,5,6,7);
 
+#define LCDWIDTH 16
 #define SCROLLSPEED 230
 #define STRENDDELAY 800
-#define LINELENGTH 16
+#define LINELENGTH 10
+// Alignment for text in LCD if LINELENGTH < LCDWIDTH
+#define ALIGN_CENTER (LCDWIDTH-LINELENGTH)/2
+#define ALIGN_LEFT 0
+#define ALIGN_RIGHT LCDWIDTH-LINELENGTH
 
 char line[LINELENGTH + 1] = "";
 int pos = 0;
@@ -17,39 +22,32 @@ char msg2[] = "POLEPOLEPOLE";
 void setup()
 {
   Serial.begin(9600);
-  lcd.begin (16,2); // for 16 x 2 LCD module
+  lcd.begin (LCDWIDTH,2); // for 16 x 2 LCD module
   lcd.setBacklightPin(3,POSITIVE);
   lcd.setBacklight(HIGH);
-  lcd.home(); // set cursor to 0,0
-  
 }
  
 void loop()
 {
   
-  lcd.home();
+  lcd.setCursor(ALIGN_CENTER, 0);
   scrollText(line, msg, &pos);
-  
+  Serial.println(line);
   delay(SCROLLSPEED);
 }
 
 void scrollText(char *line, char *msg, int *pos) {
   strncpy(line, msg + *pos, LINELENGTH);
+  line[LINELENGTH] = '\0';
   lcd.print(line);
-  //line[17]="\0";
   if (*pos == 0) {
     delay(STRENDDELAY);
   }
   (*pos)++;
-  Serial.println(strlen(msg));
   if (*pos > (strlen(msg) - strlen(line))) {
     (*pos) = 0;
     delay(STRENDDELAY);
-  } else {
-    lcd.print(line);
   }
+  
 }
 
-//void copyString(char dest[], char source[]) {
-//  strncpy(dest, source + pos, 17);
-//}
